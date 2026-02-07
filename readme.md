@@ -1,29 +1,51 @@
-Ceci est le fichier readme pour expliquer l'installation et l'utilisation de l'application gestion taches
-=========================================================================================================
-                                DEPENDANCES A INSTALLER
-=========================================================================================================
--*mysqlconnector*
-    -lien de la librairie-: com.mysql
-    -nom-: mysql-connector-j
-    -version- : 8.3.0
--*javaFx*
-    -lien de la librairie-: org.openjfx
-    -nom-: javafx-controls
-    -version- : 21.0.2
+# Système de Gestion de Tâches
 
-    -lien de la librairie-: org.openjfx
-    -nom-: javafx-fmx
-    -version- : 21.0.2
--*dot-env*
-    -lien de la librairie-: io.github.cdimascio
-    -nom-: dotenv-java
-    -version- : 3.0.0
+Application JavaFX pour la gestion de tâches avec base de données MySQL.
 
--------------------------------------------Code à utiliser----------------------------------------------
-<dependency>
-        <groupId>le lien de la librerie</groupId>
-        <artifactId>mle nom de la librerie</artifactId>
-        <version>la version de la librairie</version>
-</dependency>
---------------------------------------------------------------------------------------------------------
-copier ce code dans la balise <dependencies>
+## Installation
+
+### 1. Prérequis
+- Java JDK 23+
+- Maven 3.6+
+- MySQL 8.0+
+
+### 2. Cloner le Projet
+```bash
+git clone https://github.com/Gaetancorneille/gestion_taches
+cd gestion_taches
+```
+
+### 3. Configurer MySQL
+Créez la base de données :
+```sql
+CREATE DATABASE gestion_taches;
+```
+
+Créez un fichier `.env` à la racine :
+```
+DB_HOST=localhost
+DB_PORT=3306
+DB_NAME=gestion_taches
+DB_USER=root
+DB_PASSWORD=votre_mot_de_passe
+```
+
+### 4. Installer les Dépendances
+```bash
+mvn clean install
+```
+
+### 5. Lancer l'Application
+```bash
+mvn javafx:run
+```
+
+## Dépendances
+
+| Dépendance | Version |
+|------------|----------|
+| MySQL Connector | 8.3.0 |
+| JavaFX Controls | 21.0.2 |
+| JavaFX FXML | 21.0.2 |
+| Dotenv Java | 3.0.0 |
+| JUnit Jupiter | 5.11.0 |
