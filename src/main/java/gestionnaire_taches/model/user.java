@@ -3,7 +3,7 @@ public abstract class user{
 
 }
    private int id;
-    private String name;
+    private String nom;
     private LocalDataTime dateCreation ;
     private boolean actif;
     private String email;
@@ -11,17 +11,17 @@ public abstract class user{
 
     public user (int id,String name,String actif, String email, String password,LocalDataTime dateCreation) {
         this.id=id;
-        this.name=name;
+        this.nom=nom;
         this.actif=actif;
         this.password=password;
         this.email=email;
         this.dateCreation=dateCreation
     }
-    public String getName() {
-        return name;
+    public String getNom() {
+        return nom;
     }
     public void setName(String name) {
-        this.name=name;
+        this.nom=nom;
     }
     public String getId() {
         return id;
@@ -48,7 +48,8 @@ public abstract class user{
     public void setEmail(String email) {
         this.email=email;
     }
-}public String getDatecreatio() {
+
+} public String getDatecreatio() {
         return dateCreation;
     }
     public void setDateCreation(String dateCreation) {
@@ -63,14 +64,24 @@ public abstract class user{
          public String toString() {
             return toString;
         }
-        public void toString(String toString) {
-            this.toString=toString;
+        public String toString() {
+            return "user {" +
+            " id="+id+
+            ", nom='"+ nom + '\'' +
+            ", email='"+ email +'\'' +
+             ", dateCreation=" + dateCreation +
+       ", actif="+ actif +'}';
         }  
+        @Override
         public boolean equals (Object 0 ) {
             if (this ==0)
             return true;
-            if (!(0 instanceof user))
+            if (!(0 instanceof user)) return false;
+            User user ==(User) 0;
+            return id == user.id &&
+                   Objects.equals(email,user.email);
         }
-        public void setActif(boolean actif) {
-            this.actif=actif;
+        @Override
+        public int hashCode() {
+           return Objects this.hash(id,email);
         } 
