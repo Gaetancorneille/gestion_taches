@@ -102,16 +102,18 @@ public class Subtask{
      }
 
      //toString
+     @Override
      public String toString(){
         return "Subtask{" + "id=" + id + ", titre='" + titre + '\'' + ", statut=" + statut + ", ordre" + ordre + '}';
      }
 
      //equals() et hashcode() basés sur id
+     @Override
      public boolean equals(Object o){
         if (this == o) return true;
         if (!(o instanceof Subtask)) return false;
-        Subtask substask = (Subtask) o;
-        return id == substask.id;
+        Subtask subtask = (Subtask) o;
+        return id == subtask.id;
      }
 
      @Override
