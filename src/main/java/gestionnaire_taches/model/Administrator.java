@@ -1,0 +1,47 @@
+package gestionnaire_taches.model;
+public class Administrator extends user{
+    private boolean isSuperAdmin;
+
+    public Administrator(int id, String nom, String email, String password, String role, String departement){
+        super(id, nom, email, password, role, departement);
+        this.isSuperAdmin=false;
+    }
+
+    public Administrator(int id, String nom, String email, String password){
+        super(id, nom, email, password, "Administrator", "");
+        this.isSuperAdmin=false;
+    }
+
+    public boolean isSuperAdmin(){
+        return this.isSuperAdmin;
+    }
+
+    public void setSuperAdmin(boolean isSuperAdmin){
+        this.isSuperAdmin=isSuperAdmin;
+    }
+    
+    public boolean canManagerAdministrators(){
+        return this.isSuperAdmin;
+    }
+
+    public boolean canManagerAllServices(){
+        return this.isSuperAdmin;
+    }
+
+    @Override
+    public String toString(){
+        return "Administrateur: Nom=" + super.getName() + ", Email=" + super.getEmail() + ", isSuperAdmin=" + isSuperAdmin;
+    }
+
+    public String getRole() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public String getDepartement() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public String getPassword() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+}

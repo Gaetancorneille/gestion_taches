@@ -1,13 +1,13 @@
-package gestionnaire_taches.model
-public class user
- private int id;
+package gestionnaire_taches.model;
+public class user {
+    private int id;
     private String name;
     private String prenom;
     private String matricule;
     private String mail;
-    private String telphone;
+    private String telephone;
 
-    public employe(int id,string name,string prenom,string matricule, String mail, String telephone) {
+    public user(int id, String name, String prenom, String matricule, String mail, String telephone) {
         this.id=id;
         this.name=name;
         this.prenom=prenom;
@@ -21,10 +21,10 @@ public class user
     public void setName(String name) {
         this.name=name;
     }
-    public String getId() {
+    public int getId() {
         return id;
     }
-    public void setId(String id) {
+    public void setId(int id) {
         this.id=id;
     }
      
@@ -43,7 +43,19 @@ public class user
      public String getMail() {
         return mail;
     }
-    public void setMail(String name) {
+    public void setMail(String mail) {
         this.mail=mail;
+    }
+
+    String getEmail() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public String getMatricule() {
+        return matricule;
+    }
+
+    public void setMatricule(String matricule) {
+        this.matricule = matricule;
     }
 } 
