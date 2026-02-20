@@ -1,5 +1,4 @@
-package gestionnaire_taches.model
-public class user{
+public class User{
     private int id;
     private String name;
     private String prenom;
@@ -7,7 +6,7 @@ public class user{
     private String mail;
     private String telphone;
 
-    public employe(int id,string name,string prenom,string matricule, String mail, String telephone) {
+    public User(int id,string name,string prenom,string matricule, String mail, String telephone) {
         this.id=id;
         this.name=name;
         this.prenom=prenom;
