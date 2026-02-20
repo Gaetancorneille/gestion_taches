@@ -47,3 +47,5 @@ public class user{
         this.mail=mail;
     }
 } 
+
+package gestionnaire_taches.model
