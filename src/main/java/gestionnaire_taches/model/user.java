@@ -1,19 +1,21 @@
 package gestionnaire_taches.model
-public class user
- private int id;
-    private String name;
-    private String prenom;
-    private String matricule;
-    private String mail;
-    private String telphone;
+public abstract class user{
 
-    public employe(int id,string name,string prenom,string matricule, String mail, String telephone) {
+}
+   private int id;
+    private String name;
+    private LocalDataTime dateCreation ;
+    private boolean actif;
+    private String email;
+    private String password;
+
+    public user (int id,String name,String actif, String email, String password,LocalDataTime dateCreation) {
         this.id=id;
         this.name=name;
-        this.prenom=prenom;
-        this.matricule=matricule;
-        this.mail=mail;
-        this.telephone=telephone;
+        this.actif=actif;
+        this.password=password;
+        this.email=email;
+        this.dateCreation=dateCreation
     }
     public String getName() {
         return name;
@@ -28,22 +30,47 @@ public class user
         this.id=id;
     }
      
-    public String getPrenom() {
-        return prenom;
+    public String getPassword() {
+        return password;
     }
-    public void setPrenom(String prenom) {
-        this.prenom=prenom;
+    public void setPassword(String password) {
+        this.password=password;
     }
- public String getTelephone() {
-        return telephone;
+ public String getActif() {
+        return actif;
     }
-    public void setTelephone(String telephone) {
-        this.telephone=telephone;
+    public void setActif(String actif) {
+        this.actif=actif;
     }
-     public String getMail() {
-        return mail;
+     public String getEmail() {
+        return email;
     }
-    public void setMail(String name) {
-        this.mail=mail;
+    public void setEmail(String email) {
+        this.email=email;
     }
-} 
+}public String getDatecreatio() {
+        return dateCreation;
+    }
+    public void setDateCreation(String dateCreation) {
+        this.dateCreation=dateCreation;
+         }
+        public isActif() {
+            return actif;
+        }
+        public void setActif(boolean actif) {
+            this.actif=actif;
+        } 
+         public String toString() {
+            return toString;
+        }
+        public void toString(String toString) {
+            this.toString=toString;
+        }  
+        public boolean equals (Object 0 ) {
+            if (this ==0)
+            return true;
+            if (!(0 instanceof user))
+        }
+        public void setActif(boolean actif) {
+            this.actif=actif;
+        } 
