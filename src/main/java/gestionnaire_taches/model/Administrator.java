@@ -1,39 +1,49 @@
 package gestionnaire_taches.model;
-public class Administrator extends user{
+
+public class Administrator extends user {
     private boolean isSuperAdmin;
 
-    public Administrator(int id, String nom, String email, String password, String role, String departement){
+    public Administrator() {
+        super(0, "", "", "", "", "");
+        this.isSuperAdmin = false;
+    }
+
+    public Administrator(String nom, String email, String password) {
+        super(0, nom, email, password, "", "");
+        this.isSuperAdmin = false;
+    }
+
+    public Administrator(int id, String nom, String email, String password, String role, String departement) {
         super(id, nom, email, password, role, departement);
-        this.isSuperAdmin=false;
+        this.isSuperAdmin = false;
     }
 
-    public Administrator(int id, String nom, String email, String password){
-        super(id, nom, email, password, "Administrator", "");
-        this.isSuperAdmin=false;
-    }
-
-    public boolean isSuperAdmin(){
+    public boolean isSuperAdmin() {
         return this.isSuperAdmin;
     }
 
-    public void setSuperAdmin(boolean isSuperAdmin){
-        this.isSuperAdmin=isSuperAdmin;
+    public void setSuperAdmin(boolean isSuperAdmin) {
+        this.isSuperAdmin = isSuperAdmin;
     }
-    
-    public boolean canManagerAdministrators(){
+
+    public boolean canManagerAdministrators() {
         return this.isSuperAdmin;
     }
 
-    public boolean canManagerAllServices(){
+    public boolean canManagerAllServices() {
         return this.isSuperAdmin;
     }
 
     @Override
-    public String toString(){
-        return "Administrateur: Nom=" + super.getName() + ", Email=" + super.getEmail() + ", isSuperAdmin=" + isSuperAdmin;
+    public String toString() {
+        return "Administrator{" +
+                "nom='" + getName() + '\'' +
+                ", email='" + getMail() + '\'' +
+                ", isSuperAdmin=" + isSuperAdmin +
+                '}';
     }
 
-    public String getRole() {
+    public String getPassword() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
@@ -41,7 +51,7 @@ public class Administrator extends user{
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public String getPassword() {
+    public String getRole() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 }
