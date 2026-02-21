@@ -1,5 +1,4 @@
-package gestionnaire_taches.model
-public class user
+public class user{
  private int id;
     private String name;
     private String prenom;
@@ -34,7 +33,7 @@ public class user
     public void setPrenom(String prenom) {
         this.prenom=prenom;
     }
- public String getTelephone() {
+    public String getTelephone() {
         return telephone;
     }
     public void setTelephone(String telephone) {
@@ -47,3 +46,4 @@ public class user
         this.mail=mail;
     }
 } 
+package gestionnaire_taches.model
