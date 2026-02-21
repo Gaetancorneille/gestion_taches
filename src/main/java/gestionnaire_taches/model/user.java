@@ -1,10 +1,15 @@
 <<<<<<< HEAD
+public class user{
+ private int id;
+=======
+<<<<<<< HEAD
 public class User{
 =======
 package gestionnaire_taches.model;
 public class user{
 >>>>>>> e41be5618c20d3f7f310270c8a629e3f702c5d1a
     private int id;
+>>>>>>> a615dc3b6d030c146606a2affbc218881315b31a
     private String name;
     private String prenom;
     private String matricule;
@@ -56,6 +61,10 @@ public class user{
     }
 <<<<<<< HEAD
 } 
+package gestionnaire_taches.model
+=======
+<<<<<<< HEAD
+} 
 
 package gestionnaire_taches.model
 =======
@@ -73,3 +82,4 @@ package gestionnaire_taches.model
     }
 } 
 >>>>>>> e41be5618c20d3f7f310270c8a629e3f702c5d1a
+>>>>>>> a615dc3b6d030c146606a2affbc218881315b31a
