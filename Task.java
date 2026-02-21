@@ -2,6 +2,8 @@ import java.util.ArrayList;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.time.temporal.ChronoUnit;
+import java.util.Objects;
 
 public class Task{
 
@@ -122,10 +124,31 @@ public class Task{
         return(completed *100.0)/subtasks.size();
     }
 
-    //
+    // on verifie si la tache est en retard
     public boolean isOverdue(){
         if(dateLimite==null)
         return false;
         return LocalDate.now().isAfter(dateLimite)&&statut!= TaskStatus.COMPLETED;
+    } 
+
+    //nombres de jours restants avant la date limite
+    public long getDaysUntilDeadline(){
+        if(dateLimite==null)
+        return ChronoUnit.DAYS.between(LocalDate.now(), dateLimite);
+    }
+  @override
+    public String toString(){
+    return "Task{"+ "id=" + id +", titre='" + titre + '\' '+ ", priorite=" + priorite + ", statut=" + statut + ", dateLimite=" + dateLimite + '}';
+    }
+  @override
+    public boolean equals(Object o){
+        if(this==0)
+        return true;
+        if(!(o instanceof Task))
+        return id==task.id;
+    }
+  @override
+    public int hashCode(){
+        return Objects.hash(id);
     } 
 }     
