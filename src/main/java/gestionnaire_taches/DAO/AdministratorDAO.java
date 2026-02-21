@@ -5,7 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Interface générique pour les opérations CRUD.
+ * Implémentation du DAO pour la classe Administrator.
+ * Gère les opérations CRUD dans la base de données.
  */
 public class AdministratorDAO{
     private Connection connection;   //creation d'un cable vers la base de donnees

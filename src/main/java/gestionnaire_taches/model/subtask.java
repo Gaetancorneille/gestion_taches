@@ -1,9 +1,9 @@
-package model;
+package gestionnaire_taches.model;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
 
-public class Subtask{
+public class subtask{
 
     private int id;
     private String titre;
@@ -16,13 +16,13 @@ public class Subtask{
 
 
     //Constructeur vide
-    public Subtask(){
+    public subtask(){
         this.dateCreation = LocalDateTime.now();
         this.statut = TaskStatus.A_FAIRE;
     }
      
      //Constructeur principal
-     public Subtask(String titre, String description, int taskId){
+     public subtask(String titre, String description, int taskId){
         this.titre = titre;
         this.description = description;
         this.taskId = taskId;
@@ -102,20 +102,22 @@ public class Subtask{
      }
 
      //toString
+    @Override
      public String toString(){
-        return "Subtask{" + "id=" + id + ", titre='" + titre + '\'' + ", statut=" + statut + ", ordre" + ordre + '}';
+        return "subtask{" + "id=" + id + ", titre='" + titre + '\'' + ", statut=" + statut + ", ordre" + ordre + '}';
      }
 
      //equals() et hashcode() basés sur id
+    @Override
      public boolean equals(Object o){
         if (this == o) return true;
-        if (!(o instanceof Subtask)) return false;
-        Subtask substask = (Subtask) o;
+        if (!(o instanceof subtask)) return false;
+        subtask substask = (subtask) o;
         return id == substask.id;
      }
 
      @Override
-     public int hashcode(){
+     public int hashCode(){
         return Objects.hash(id);
      }
 }
