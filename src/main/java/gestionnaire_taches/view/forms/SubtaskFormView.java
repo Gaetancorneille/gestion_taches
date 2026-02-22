@@ -1,84 +1,182 @@
-package gestionnaire_taches.view;
+package gestionnaire_taches.view.forms;
 
+import gestionnaire_taches.view.TaskListView;
+import gestionnaire_taches.dao.impl.SubtaskDAOImpl;
+import gestionnaire_taches.dao.impl.TaskDAOImpl;
+import gestionnaire_taches.model.Subtask;
+import gestionnaire_taches.model.Task;
+import gestionnaire_taches.model.TaskStatus;
+import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.collections.FXCollections;
+
+import java.util.List;
 
 public class SubtaskFormView {
+
+    private Subtask existingSubtask;
+    private Task parentTask;
+
+    public SubtaskFormView(Task parentTask) {
+        this.existingSubtask = null;
+        this.parentTask = parentTask;
+    }
+
+    public SubtaskFormView(Subtask subtask, Task parentTask) {
+        this.existingSubtask = subtask;
+        this.parentTask = parentTask;
+    }
 
     public VBox getView() {
         VBox formContainer = new VBox(15);
         formContainer.setPadding(new Insets(20));
+        formContainer.setStyle("-fx-background-color: #ecf0f1;");
 
-        // Title
-        Label titleLabel = new Label("Formulaire de Sous-tâche");
-        titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold;");
+        boolean isEdit = existingSubtask != null;
+        Label titleLabel = new Label(isEdit ? "Modifier la Sous-tâche" : "Nouvelle Sous-tâche");
+        titleLabel.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
 
-        // Form grid
+        // Info tâche parente
+        if (parentTask != null) {
+            Label parentInfo = new Label("Tâche parente : " + parentTask.getTitre());
+            parentInfo.setStyle("-fx-text-fill: #7f8c8d; -fx-font-size: 13px;");
+            formContainer.getChildren().addAll(titleLabel, parentInfo);
+        } else {
+            formContainer.getChildren().add(titleLabel);
+        }
+
         GridPane formGrid = new GridPane();
-        formGrid.setHgap(10);
-        formGrid.setVgap(10);
+        formGrid.setHgap(15);
+        formGrid.setVgap(12);
+        formGrid.setPadding(new Insets(20));
+        formGrid.setStyle("-fx-background-color: white; -fx-background-radius: 8;");
 
-        // Fields
-        Label titleLabelField = new Label("Titre:");
         TextField titleField = new TextField();
+        titleField.setPromptText("Titre de la sous-tâche");
         titleField.setPrefWidth(300);
 
-        Label descriptionLabel = new Label("Description:");
         TextArea descriptionArea = new TextArea();
-        descriptionArea.setPrefRowCount(4);
+        descriptionArea.setPrefRowCount(3);
         descriptionArea.setPrefWidth(300);
+        descriptionArea.setPromptText("Description");
 
-        Label taskIdLabel = new Label("ID Tâche:");
-        TextField taskIdField = new TextField();
-        taskIdField.setPrefWidth(100);
-
-        Label orderLabel = new Label("Ordre:");
         TextField orderField = new TextField();
+        orderField.setPromptText("Ex: 1, 2, 3...");
         orderField.setPrefWidth(100);
 
-        Label statusLabel = new Label("Statut:");
-        ComboBox<gestionnaire_taches.model.TaskStatus> statusCombo = new ComboBox<>();
+        ComboBox<TaskStatus> statusCombo = new ComboBox<>();
         statusCombo.setItems(FXCollections.observableArrayList(
-            gestionnaire_taches.model.TaskStatus.A_FAIRE,
-            gestionnaire_taches.model.TaskStatus.EN_COURS,
-            gestionnaire_taches.model.TaskStatus.TERMINEE
+            TaskStatus.A_FAIRE, TaskStatus.EN_COURS, TaskStatus.TERMINEE
         ));
+        statusCombo.setPrefWidth(300);
 
-        // Add fields to grid
+        // Pré-remplissage en édition
+        if (isEdit) {
+            titleField.setText(existingSubtask.getTitre());
+            descriptionArea.setText(existingSubtask.getDescription());
+            orderField.setText(String.valueOf(existingSubtask.getOrdre()));
+            statusCombo.setValue(existingSubtask.getStatut());
+        } else {
+            statusCombo.setValue(TaskStatus.A_FAIRE);
+        }
+
         int row = 0;
-        formGrid.add(titleLabelField, 0, row);
-        formGrid.add(titleField, 1, row++);
-        
-        formGrid.add(descriptionLabel, 0, row);
-        formGrid.add(descriptionArea, 1, row++);
-        
-        formGrid.add(taskIdLabel, 0, row);
-        formGrid.add(taskIdField, 1, row++);
-        
-        formGrid.add(orderLabel, 0, row);
-        formGrid.add(orderField, 1, row++);
-        
-        formGrid.add(statusLabel, 0, row);
-        formGrid.add(statusCombo, 1, row++);
+        formGrid.add(new Label("Titre :"), 0, row);       formGrid.add(titleField, 1, row++);
+        formGrid.add(new Label("Description :"), 0, row); formGrid.add(descriptionArea, 1, row++);
+        formGrid.add(new Label("Ordre :"), 0, row);       formGrid.add(orderField, 1, row++);
+        formGrid.add(new Label("Statut :"), 0, row);      formGrid.add(statusCombo, 1, row++);
 
-        // Buttons
-        HBox buttonBox = new HBox(10);
-        Button saveButton = new Button("Sauvegarder");
+        Button saveButton   = new Button(isEdit ? "Modifier" : "Créer");
         Button cancelButton = new Button("Annuler");
-        Button resetButton = new Button("Réinitialiser");
-        
-        saveButton.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white;");
-        cancelButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white;");
-        resetButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white;");
+        Button resetButton  = new Button("Réinitialiser");
 
-        buttonBox.getChildren().addAll(saveButton, cancelButton, resetButton);
+        saveButton.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-cursor: hand;");
+        cancelButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-cursor: hand;");
+        resetButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-cursor: hand;");
+
+        saveButton.setOnAction(e -> {
+            String titre = titleField.getText().trim();
+            String desc  = descriptionArea.getText().trim();
+            String orderStr = orderField.getText().trim();
+            TaskStatus status = statusCombo.getValue();
+
+            if (titre.isEmpty()) {
+                showAlert(Alert.AlertType.ERROR, "Champ manquant", "Le titre est obligatoire.");
+                return;
+            }
+            if (status == null) {
+                showAlert(Alert.AlertType.ERROR, "Champ manquant", "Veuillez sélectionner un statut.");
+                return;
+            }
+            int ordre = 1;
+            try {
+                if (!orderStr.isEmpty()) ordre = Integer.parseInt(orderStr);
+            } catch (NumberFormatException ex) {
+                showAlert(Alert.AlertType.ERROR, "Format invalide", "L'ordre doit être un nombre entier.");
+                return;
+            }
+
+            SubtaskDAOImpl dao = new SubtaskDAOImpl();
+
+            if (isEdit) {
+                existingSubtask.setTitre(titre);
+                existingSubtask.setDescription(desc);
+                existingSubtask.setOrdre(ordre);
+                existingSubtask.setStatut(status);
+                dao.update(existingSubtask);
+                showAlert(Alert.AlertType.INFORMATION, "Succès", "Sous-tâche modifiée avec succès !");
+            } else {
+                int taskId = parentTask != null ? parentTask.getId() : 0;
+                Subtask subtask = new Subtask(titre, desc, taskId);
+                subtask.setOrdre(ordre);
+                subtask.setStatut(status);
+                dao.save(subtask);
+                showAlert(Alert.AlertType.INFORMATION, "Succès", "Sous-tâche créée avec succès !");
+            }
+
+            // Retour aux détails de la tâche parente
+            if (parentTask != null) {
+                gestionnaire_taches.Main.getMainLayout().setCenter(
+                    new gestionnaire_taches.view.forms.TaskDetailsView(parentTask).getView());
+            } else {
+                List<Task> list = new TaskDAOImpl().findAll();
+                gestionnaire_taches.Main.getMainLayout().setCenter(
+                    new gestionnaire_taches.view.TaskListView(FXCollections.observableArrayList(list)).getView());
+            }
+        });
+
+        cancelButton.setOnAction(e -> {
+            if (parentTask != null) {
+                gestionnaire_taches.Main.getMainLayout().setCenter(
+                    new gestionnaire_taches.view.forms.TaskDetailsView(parentTask).getView());
+            } else {
+                List<Task> list = new TaskDAOImpl().findAll();
+                gestionnaire_taches.Main.getMainLayout().setCenter(
+                    new gestionnaire_taches.view.TaskListView(FXCollections.observableArrayList(list)).getView());
+            }
+        });
+
+        resetButton.setOnAction(e -> {
+            titleField.clear();
+            descriptionArea.clear();
+            orderField.clear();
+            statusCombo.setValue(TaskStatus.A_FAIRE);
+        });
+
+        HBox buttonBox = new HBox(10, saveButton, cancelButton, resetButton);
         buttonBox.setAlignment(Pos.CENTER);
 
-        formContainer.getChildren().addAll(titleLabel, formGrid, buttonBox);
-
+        formContainer.getChildren().addAll(formGrid, buttonBox);
         return formContainer;
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String message) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }

@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import gestionnaire_taches.model.Subtask;
 
 /**
  * Classe représentant une tâche à accomplir
@@ -90,6 +89,25 @@ public class Task {
     public Task(int id, String titre, String description, int employeeId, int serviceId) {
         this(titre, description, employeeId, serviceId);
         this.id = id;
+    }
+
+    /**
+     * Constructeur complet avec tous les champs modifiables.
+     * Utile pour la création rapide à partir d'un formulaire.
+     * @param titre Titre de la tâche
+     * @param description Description détaillée de la tâche
+     * @param employeeId Numéro de l'employé à qui assigner la tâche
+     * @param serviceId Numéro du service auquel la tâche appartient
+     * @param dateLimite Date limite pour terminer la tâche
+     * @param priorite Priorité de la tâche
+     * @param statut Statut initial de la tâche
+     */
+    public Task(String titre, String description, int employeeId, int serviceId,
+                LocalDate dateLimite, Priority priorite, TaskStatus statut) {
+        this(titre, description, employeeId, serviceId);
+        this.dateLimite = dateLimite;
+        this.priorite = priorite;
+        this.statut = statut;
     }
     
     /**

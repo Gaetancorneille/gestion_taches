@@ -1,11 +1,17 @@
 package gestionnaire_taches.dao.impl;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+
 import gestionnaire_taches.dao.interfaces.ServiceDAO;
 import gestionnaire_taches.model.Service;
 import gestionnaire_taches.util.DatabaseConnection;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Implémentation de l'interface ServiceDAO
@@ -15,45 +21,144 @@ public class ServiceDAOImpl implements ServiceDAO {
     
     @Override
     public Service save(Service service) {
-        // Implementation de base - à compléter
+        String sql = "INSERT INTO Service (nom, description, administrator_id, dateCreation, actif) VALUES (?, ?, ?, ?, ?)";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+
+            stmt.setString(1, service.getNom());
+            stmt.setString(2, service.getDescription());
+            stmt.setInt(3, service.getAdministratorId());
+            stmt.setTimestamp(4, Timestamp.valueOf(service.getDateCreation()));
+            stmt.setBoolean(5, service.isActif());
+
+            int affected = stmt.executeUpdate();
+            if (affected == 0) {
+                throw new SQLException("Échec de la création du service, aucune ligne affectée.");
+            }
+            try (ResultSet keys = stmt.getGeneratedKeys()) {
+                if (keys.next()) {
+                    service.setId(keys.getInt(1));
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de l'enregistrement du service : " + e.getMessage());
+            e.printStackTrace();
+        }
         return service;
     }
     
     @Override
     public Service update(Service service) {
-        // Implementation de base - à compléter
+        String sql = "UPDATE Service SET nom = ?, description = ?, administrator_id = ?, actif = ? WHERE id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, service.getNom());
+            stmt.setString(2, service.getDescription());
+            stmt.setInt(3, service.getAdministratorId());
+            stmt.setBoolean(4, service.isActif());
+            stmt.setInt(5, service.getId());
+
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de la mise à jour du service : " + e.getMessage());
+            e.printStackTrace();
+        }
         return service;
     }
     
     @Override
     public void delete(Integer id) {
-        // Implementation de base - à compléter
+        String sql = "DELETE FROM Service WHERE id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de la suppression du service : " + e.getMessage());
+            e.printStackTrace();
+        }
     }
     
     @Override
     public java.util.Optional<Service> findById(Integer id) {
-        // Implementation de base - à compléter
-        return java.util.Optional.empty();
+        String sql = "SELECT * FROM Service WHERE id = ?";
+        Service service = null;
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, id);
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    service = mapResultSetToService(rs);
+                }
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de la recherche du service : " + e.getMessage());
+            e.printStackTrace();
+        }
+        return java.util.Optional.ofNullable(service);
     }
     
     @Override
     public List<Service> findAll() {
-        return new ArrayList<>();
+        String sql = "SELECT * FROM Service ORDER BY nom";
+        List<Service> services = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                services.add(mapResultSetToService(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de la récupération des services : " + e.getMessage());
+            e.printStackTrace();
+        }
+        return services;
     }
     
     @Override
     public long count() {
-        return 0;
+        String sql = "SELECT COUNT(*) FROM Service";
+        long count = 0;
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            if (rs.next()) {
+                count = rs.getLong(1);
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur lors du comptage des services : " + e.getMessage());
+            e.printStackTrace();
+        }
+        return count;
     }
     
     @Override
     public List<Service> getServicesByAdministrator(Integer administratorId) {
-        return new ArrayList<>();
+        // réutilise la méthode déjà existante
+        return findByAdministratorId(administratorId);
     }
     
     @Override
     public List<Service> getActiveServices() {
-        return new ArrayList<>();
+        String sql = "SELECT * FROM Service WHERE actif = TRUE ORDER BY nom";
+        List<Service> services = new ArrayList<>();
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                services.add(mapResultSetToService(rs));
+            }
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de la récupération des services actifs : " + e.getMessage());
+            e.printStackTrace();
+        }
+        return services;
     }
     
     @Override

@@ -117,6 +117,14 @@ public class Main extends Application {
     }
     
     /**
+     * Retourne le layout principal pour permettre la navigation depuis les vues
+     * @return BorderPane principal de l'application
+     */
+    public static BorderPane getMainLayout() {
+        return mainLayout;
+    }
+
+    /**
      * Point d'entrée principal de l'application
      * @param args Arguments de la ligne de commande
      */

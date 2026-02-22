@@ -3,6 +3,7 @@ package gestionnaire_taches.dao.impl;
 import gestionnaire_taches.dao.interfaces.AdministratorDAO;
 import gestionnaire_taches.model.Administrator;
 import gestionnaire_taches.util.DatabaseConnection;
+import org.mindrot.jbcrypt.BCrypt;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,9 @@ public class AdministratorDAOImpl implements AdministratorDAO {
             
             stmt.setString(1, administrator.getNom());
             stmt.setString(2, administrator.getEmail());
-            stmt.setString(3, administrator.getPassword());
+            // Hashage BCrypt du mot de passe avant insertion
+            String hashedPassword = BCrypt.hashpw(administrator.getPassword(), BCrypt.gensalt());
+            stmt.setString(3, hashedPassword);
             stmt.setBoolean(4, administrator.isSuperAdmin());
             stmt.setTimestamp(5, Timestamp.valueOf(administrator.getDateCreation()));
             stmt.setBoolean(6, administrator.isActif());
@@ -219,18 +222,22 @@ public class AdministratorDAOImpl implements AdministratorDAO {
      */
     @Override
     public Optional<Administrator> authenticate(String email, String password) {
-        String sql = "SELECT * FROM Administrator WHERE email = ? AND password = ? AND actif = true";
+        // On récupère d'abord l'administrateur par email, puis on vérifie le mot de passe avec BCrypt
+        String sql = "SELECT * FROM Administrator WHERE email = ? AND actif = true";
         Administrator administrator = null;
         
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
             
             stmt.setString(1, email);
-            stmt.setString(2, password);
             
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
-                    administrator = mapResultSetToAdministrator(rs);
+                    Administrator candidate = mapResultSetToAdministrator(rs);
+                    // Vérification BCrypt : comparaison du mot de passe en clair avec le hash stocké
+                    if (BCrypt.checkpw(password, candidate.getPassword())) {
+                        administrator = candidate;
+                    }
                 }
             }
             

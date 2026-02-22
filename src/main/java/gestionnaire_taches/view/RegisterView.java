@@ -165,8 +165,8 @@ public class RegisterView {
      * @return TextField du nom
      */
     public TextField getNomField() {
-        // Le TextField est le deuxième enfant du VBox (après le Label)
-        return (TextField) ((VBox) ((VBox) nomField).getChildren().get(1)).getChildren().get(0);
+        // nomField est un VBox contenant [Label, TextField] — on prend directement l'index 1
+        return (TextField) nomField.getChildren().get(1);
     }
     
     /**
@@ -174,7 +174,7 @@ public class RegisterView {
      * @return TextField de l'email
      */
     public TextField getEmailField() {
-        return (TextField) ((VBox) ((VBox) emailField).getChildren().get(1)).getChildren().get(0);
+        return (TextField) emailField.getChildren().get(1);
     }
     
     /**
@@ -182,7 +182,7 @@ public class RegisterView {
      * @return PasswordField du mot de passe
      */
     public PasswordField getPasswordField() {
-        return (PasswordField) ((VBox) ((VBox) passwordField).getChildren().get(1)).getChildren().get(0);
+        return (PasswordField) passwordField.getChildren().get(1);
     }
     
     /**
@@ -190,7 +190,7 @@ public class RegisterView {
      * @return PasswordField de confirmation
      */
     public PasswordField getConfirmPasswordField() {
-        return (PasswordField) ((VBox) ((VBox) confirmPasswordField).getChildren().get(1)).getChildren().get(0);
+        return (PasswordField) confirmPasswordField.getChildren().get(1);
     }
     
     /**
