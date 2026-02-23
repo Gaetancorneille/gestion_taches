@@ -1,19 +1,30 @@
 package gestionnaire_taches.view;
 
 import gestionnaire_taches.dao.impl.TaskDAOImpl;
-import gestionnaire_taches.model.Task;
-import gestionnaire_taches.view.forms.TaskFormView;
 import gestionnaire_taches.model.Priority;
+import gestionnaire_taches.model.Task;
 import gestionnaire_taches.model.TaskStatus;
+import gestionnaire_taches.view.forms.TaskDetailsView;
+import gestionnaire_taches.view.forms.TaskFormView;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.layout.VBox;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Region;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 
 import java.util.Optional;
 
 public class TaskListView {
+
+    private static final String COLOR_BG     = "#F5F7FA";
+    private static final String COLOR_WHITE  = "#FFFFFF";
+    private static final String COLOR_TITLE  = "#1E2A3A";
+    private static final String COLOR_BORDER = "#E0E6ED";
 
     private ObservableList<Task> tasks;
 
@@ -22,33 +33,59 @@ public class TaskListView {
     }
 
     public VBox getView() {
-        VBox container = new VBox(10);
-        container.setPadding(new Insets(20));
-        container.setStyle("-fx-background-color: #ecf0f1;");
+        VBox container = new VBox(20);
+        container.setPadding(new Insets(30));
+        container.setStyle("-fx-background-color: " + COLOR_BG + ";");
 
-        Label titleLabel = new Label("Liste des Tâches");
-        titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+        // ── En-tête ──────────────────────────────────────────────────────
+        HBox header = new HBox();
+        header.setAlignment(Pos.CENTER_LEFT);
 
+        Label titleLabel = new Label("✅  Tâches");
+        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+        titleLabel.setStyle("-fx-text-fill: " + COLOR_TITLE + ";");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, javafx.scene.layout.Priority.ALWAYS);
+
+        Button addButton = actionBtn("➕  Ajouter", "#1565C0");
+        addButton.setOnAction(e -> {
+            AppShell shell = gestionnaire_taches.Main.getAppShell();
+            if (shell != null) {
+                shell.navigateTo(new TaskFormView().getView());
+            }
+        });
+
+        header.getChildren().addAll(titleLabel, spacer, addButton);
+
+        // ── Tableau ───────────────────────────────────────────────────────
         TableView<Task> tableView = createTaskTable();
 
-        Button addButton     = new Button("➕ Ajouter");
-        Button editButton    = new Button("✏️ Modifier");
-        Button deleteButton  = new Button("🗑️ Supprimer");
-        Button detailsButton = new Button("🔍 Voir détails");
+        // Double-clic → détails
+        tableView.setOnMouseClicked(e -> {
+            if (e.getClickCount() == 2) {
+                Task selected = tableView.getSelectionModel().getSelectedItem();
+                if (selected != null) {
+                    AppShell shell = gestionnaire_taches.Main.getAppShell();
+                    if (shell != null) {
+                        shell.navigateTo(new TaskDetailsView(selected).getView());
+                    }
+                }
+            }
+        });
 
-        addButton.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-cursor: hand;");
-        editButton.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-cursor: hand;");
-        deleteButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-cursor: hand;");
-        detailsButton.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-cursor: hand;");
-
-        addButton.setOnAction(e ->
-            gestionnaire_taches.Main.getMainLayout().setCenter(new gestionnaire_taches.view.forms.TaskFormView().getView())
-        );
+        // ── Barre d'actions ───────────────────────────────────────────────
+        Button editButton    = actionBtn("✏️  Modifier",     "#E65100");
+        Button deleteButton  = actionBtn("🗑️  Supprimer",    "#C62828");
+        Button detailsButton = actionBtn("🔍  Voir détails", "#1565C0");
 
         editButton.setOnAction(e -> {
             Task selected = tableView.getSelectionModel().getSelectedItem();
             if (selected == null) { showAlert("Veuillez sélectionner une tâche à modifier."); return; }
-            gestionnaire_taches.Main.getMainLayout().setCenter(new gestionnaire_taches.view.forms.TaskFormView(selected).getView());
+            AppShell shell = gestionnaire_taches.Main.getAppShell();
+            if (shell != null) {
+                shell.navigateTo(new TaskFormView(selected).getView());
+            }
         });
 
         deleteButton.setOnAction(e -> {
@@ -67,56 +104,114 @@ public class TaskListView {
         detailsButton.setOnAction(e -> {
             Task selected = tableView.getSelectionModel().getSelectedItem();
             if (selected == null) { showAlert("Veuillez sélectionner une tâche."); return; }
-            gestionnaire_taches.Main.getMainLayout().setCenter(new gestionnaire_taches.view.forms.TaskDetailsView(selected).getView());
-        });
-
-        // Double-clic sur une ligne ouvre aussi les détails
-        tableView.setOnMouseClicked(e -> {
-            if (e.getClickCount() == 2) {
-                Task selected = tableView.getSelectionModel().getSelectedItem();
-                if (selected != null)
-                    gestionnaire_taches.Main.getMainLayout().setCenter(new gestionnaire_taches.view.forms.TaskDetailsView(selected).getView());
+            AppShell shell = gestionnaire_taches.Main.getAppShell();
+            if (shell != null) {
+                shell.navigateTo(new TaskDetailsView(selected).getView());
             }
         });
 
-        HBox buttonBox = new HBox(10, addButton, editButton, deleteButton, detailsButton);
-        buttonBox.setPadding(new Insets(10, 0, 0, 0));
+        HBox actionBar = new HBox(10, editButton, deleteButton, detailsButton);
+        actionBar.setAlignment(Pos.CENTER_LEFT);
 
-        container.getChildren().addAll(titleLabel, tableView, buttonBox);
+        container.getChildren().addAll(header, tableView, actionBar);
         return container;
     }
 
     private TableView<Task> createTaskTable() {
         TableColumn<Task, Integer> idCol = new TableColumn<>("ID");
-        idCol.setCellValueFactory(data -> javafx.beans.binding.Bindings.createObjectBinding(() -> data.getValue().getId()));
+        idCol.setCellValueFactory(data ->
+            javafx.beans.binding.Bindings.createObjectBinding(() -> data.getValue().getId()));
+        idCol.setPrefWidth(50);
 
         TableColumn<Task, String> titleCol = new TableColumn<>("Titre");
-        titleCol.setCellValueFactory(data -> javafx.beans.binding.Bindings.createStringBinding(() -> data.getValue().getTitre()));
+        titleCol.setCellValueFactory(data ->
+            javafx.beans.binding.Bindings.createStringBinding(() -> data.getValue().getTitre()));
         titleCol.setPrefWidth(200);
 
         TableColumn<Task, String> descCol = new TableColumn<>("Description");
-        descCol.setCellValueFactory(data -> javafx.beans.binding.Bindings.createStringBinding(() -> data.getValue().getDescription()));
-        descCol.setPrefWidth(200);
+        descCol.setCellValueFactory(data ->
+            javafx.beans.binding.Bindings.createStringBinding(() -> data.getValue().getDescription()));
+        descCol.setPrefWidth(180);
 
-        TableColumn<Task, Integer> empIdCol = new TableColumn<>("ID Employé");
-        empIdCol.setCellValueFactory(data -> javafx.beans.binding.Bindings.createObjectBinding(() -> data.getValue().getEmployeeId()));
+        TableColumn<Task, Integer> empIdCol = new TableColumn<>("Employé");
+        empIdCol.setCellValueFactory(data ->
+            javafx.beans.binding.Bindings.createObjectBinding(() -> data.getValue().getEmployeeId()));
+        empIdCol.setPrefWidth(70);
 
-        TableColumn<Task, Integer> servIdCol = new TableColumn<>("ID Service");
-        servIdCol.setCellValueFactory(data -> javafx.beans.binding.Bindings.createObjectBinding(() -> data.getValue().getServiceId()));
+        TableColumn<Task, Integer> servIdCol = new TableColumn<>("Service");
+        servIdCol.setCellValueFactory(data ->
+            javafx.beans.binding.Bindings.createObjectBinding(() -> data.getValue().getServiceId()));
+        servIdCol.setPrefWidth(70);
 
         TableColumn<Task, TaskStatus> statusCol = new TableColumn<>("Statut");
-        statusCol.setCellValueFactory(data -> javafx.beans.binding.Bindings.createObjectBinding(() -> data.getValue().getStatut()));
-        statusCol.setPrefWidth(100);
+        statusCol.setCellValueFactory(data ->
+            javafx.beans.binding.Bindings.createObjectBinding(() -> data.getValue().getStatut()));
+        statusCol.setPrefWidth(110);
+
+        // Cellule colorée selon le statut
+        statusCol.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(TaskStatus item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                setText(item.toString());
+                String color = switch (item.toString().toUpperCase()) {
+                    case "TERMINEE", "TERMINÉ", "DONE", "COMPLETED" -> "#2E7D32";
+                    case "EN_COURS", "EN COURS", "IN_PROGRESS"      -> "#1565C0";
+                    case "EN_ATTENTE", "EN ATTENTE", "PENDING"      -> "#E65100";
+                    default -> "#555555";
+                };
+                setStyle("-fx-text-fill: " + color + "; -fx-font-weight: bold;");
+            }
+        });
 
         TableColumn<Task, Priority> priorityCol = new TableColumn<>("Priorité");
-        priorityCol.setCellValueFactory(data -> javafx.beans.binding.Bindings.createObjectBinding(() -> data.getValue().getPriorite()));
-        priorityCol.setPrefWidth(100);
+        priorityCol.setCellValueFactory(data ->
+            javafx.beans.binding.Bindings.createObjectBinding(() -> data.getValue().getPriorite()));
+        priorityCol.setPrefWidth(90);
+
+        // Cellule colorée selon la priorité
+        priorityCol.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(Priority item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                setText(item.toString());
+                String color = switch (item.toString().toUpperCase()) {
+                    case "HAUTE", "HIGH"     -> "#C62828";
+                    case "MOYENNE", "MEDIUM" -> "#E65100";
+                    case "BASSE", "LOW"      -> "#2E7D32";
+                    default -> "#555555";
+                };
+                setStyle("-fx-text-fill: " + color + "; -fx-font-weight: bold;");
+            }
+        });
 
         TableView<Task> tableView = new TableView<>();
         tableView.getColumns().addAll(idCol, titleCol, descCol, empIdCol, servIdCol, statusCol, priorityCol);
         tableView.setItems(tasks);
-        tableView.setPrefHeight(420);
+        tableView.setPrefHeight(430);
+        tableView.setStyle(
+            "-fx-background-color: " + COLOR_WHITE + ";" +
+            "-fx-background-radius: 8;" +
+            "-fx-border-color: " + COLOR_BORDER + ";" +
+            "-fx-border-radius: 8;"
+        );
+        tableView.setPlaceholder(new Label("Aucune tâche trouvée."));
         return tableView;
+    }
+
+    private Button actionBtn(String text, String color) {
+        Button btn = new Button(text);
+        btn.setStyle(
+            "-fx-background-color: " + color + ";" +
+            "-fx-text-fill: white;" +
+            "-fx-font-size: 13px;" +
+            "-fx-padding: 9 18 9 18;" +
+            "-fx-background-radius: 6;" +
+            "-fx-cursor: hand;"
+        );
+        return btn;
     }
 
     private void showAlert(String message) {

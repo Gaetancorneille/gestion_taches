@@ -1,5 +1,6 @@
 package gestionnaire_taches.view.forms;
 
+import gestionnaire_taches.view.AppShell;
 import gestionnaire_taches.view.ServiceListView;
 import gestionnaire_taches.dao.impl.AdministratorDAOImpl;
 import gestionnaire_taches.dao.impl.ServiceDAOImpl;
@@ -120,15 +121,20 @@ public class ServiceFormView {
 
             // Retour à la liste
             List<Service> list = dao.findAll();
-            gestionnaire_taches.Main.getMainLayout().setCenter(
-                new gestionnaire_taches.view.ServiceListView(FXCollections.observableArrayList(list)).getView());
+            // NOUVEAU CODE — sidebar toujours visible
+            AppShell shell = gestionnaire_taches.Main.getAppShell();
+            if (shell != null) {
+                shell.navigateTo(new ServiceListView(FXCollections.observableArrayList(list)).getView());
+            }
         });
 
         // Action Annuler
         cancelButton.setOnAction(e -> {
             List<Service> list = new ServiceDAOImpl().findAll();
-            gestionnaire_taches.Main.getMainLayout().setCenter(
-                new gestionnaire_taches.view.ServiceListView(FXCollections.observableArrayList(list)).getView());
+            AppShell shell = gestionnaire_taches.Main.getAppShell();
+            if (shell != null) {
+                shell.navigateTo(new ServiceListView(FXCollections.observableArrayList(list)).getView());
+            }
         });
 
         // Action Réinitialiser

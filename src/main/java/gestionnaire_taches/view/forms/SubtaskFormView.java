@@ -1,18 +1,26 @@
 package gestionnaire_taches.view.forms;
 
-import gestionnaire_taches.view.TaskListView;
+import java.util.List;
+
 import gestionnaire_taches.dao.impl.SubtaskDAOImpl;
 import gestionnaire_taches.dao.impl.TaskDAOImpl;
 import gestionnaire_taches.model.Subtask;
 import gestionnaire_taches.model.Task;
 import gestionnaire_taches.model.TaskStatus;
+import gestionnaire_taches.view.AppShell;
+import gestionnaire_taches.view.TaskListView;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
-
-import java.util.List;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
 public class SubtaskFormView {
 
@@ -138,23 +146,28 @@ public class SubtaskFormView {
 
             // Retour aux détails de la tâche parente
             if (parentTask != null) {
-                gestionnaire_taches.Main.getMainLayout().setCenter(
-                    new gestionnaire_taches.view.forms.TaskDetailsView(parentTask).getView());
+                AppShell shell = gestionnaire_taches.Main.getAppShell();
+                if (shell != null) {
+                    shell.navigateTo(new TaskDetailsView(parentTask).getView());
+                }
             } else {
                 List<Task> list = new TaskDAOImpl().findAll();
-                gestionnaire_taches.Main.getMainLayout().setCenter(
-                    new gestionnaire_taches.view.TaskListView(FXCollections.observableArrayList(list)).getView());
+                AppShell shell = gestionnaire_taches.Main.getAppShell();
+                if (shell != null) {
+                    shell.navigateTo(new TaskListView(FXCollections.observableArrayList(list)).getView());
+                }
             }
         });
 
         cancelButton.setOnAction(e -> {
-            if (parentTask != null) {
-                gestionnaire_taches.Main.getMainLayout().setCenter(
-                    new gestionnaire_taches.view.forms.TaskDetailsView(parentTask).getView());
-            } else {
-                List<Task> list = new TaskDAOImpl().findAll();
-                gestionnaire_taches.Main.getMainLayout().setCenter(
-                    new gestionnaire_taches.view.TaskListView(FXCollections.observableArrayList(list)).getView());
+            AppShell shell = gestionnaire_taches.Main.getAppShell();
+            if (shell != null) {
+                if (parentTask != null) {
+                    shell.navigateTo(new TaskDetailsView(parentTask).getView());
+                } else {
+                    List<Task> list = new TaskDAOImpl().findAll();
+                    shell.navigateTo(new TaskListView(FXCollections.observableArrayList(list)).getView());
+                }
             }
         });
 

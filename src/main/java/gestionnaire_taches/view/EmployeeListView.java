@@ -6,12 +6,20 @@ import gestionnaire_taches.model.Employee;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 
 import java.util.Optional;
 
 public class EmployeeListView {
+
+    private static final String COLOR_BG     = "#F5F7FA";
+    private static final String COLOR_WHITE  = "#FFFFFF";
+    private static final String COLOR_TITLE  = "#1E2A3A";
+    private static final String COLOR_BORDER = "#E0E6ED";
 
     private ObservableList<Employee> employees;
 
@@ -20,31 +28,45 @@ public class EmployeeListView {
     }
 
     public VBox getView() {
-        VBox container = new VBox(10);
-        container.setPadding(new Insets(20));
-        container.setStyle("-fx-background-color: #ecf0f1;");
+        VBox container = new VBox(20);
+        container.setPadding(new Insets(30));
+        container.setStyle("-fx-background-color: " + COLOR_BG + ";");
 
-        Label titleLabel = new Label("Liste des Employés");
-        titleLabel.setStyle("-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;");
+        // ── En-tête ──────────────────────────────────────────────────────
+        HBox header = new HBox();
+        header.setAlignment(Pos.CENTER_LEFT);
 
+        Label titleLabel = new Label("👥  Employés");
+        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+        titleLabel.setStyle("-fx-text-fill: " + COLOR_TITLE + ";");
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        Button addButton = actionBtn("➕  Ajouter", "#1565C0");
+        addButton.setOnAction(e -> {
+            AppShell shell = gestionnaire_taches.Main.getAppShell();
+            if (shell != null) {
+                shell.navigateTo(new EmployeeFormView().getView());
+            }
+        });
+
+        header.getChildren().addAll(titleLabel, spacer, addButton);
+
+        // ── Tableau ───────────────────────────────────────────────────────
         TableView<Employee> tableView = createEmployeeTable();
 
-        Button addButton    = new Button("➕ Ajouter");
-        Button editButton   = new Button("✏️ Modifier");
-        Button deleteButton = new Button("🗑️ Supprimer");
-
-        addButton.setStyle("-fx-background-color: #2ecc71; -fx-text-fill: white; -fx-cursor: hand;");
-        editButton.setStyle("-fx-background-color: #f39c12; -fx-text-fill: white; -fx-cursor: hand;");
-        deleteButton.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-cursor: hand;");
-
-        addButton.setOnAction(e ->
-            gestionnaire_taches.Main.getMainLayout().setCenter(new gestionnaire_taches.view.forms.EmployeeFormView().getView())
-        );
+        // ── Barre d'actions ───────────────────────────────────────────────
+        Button editButton   = actionBtn("✏️  Modifier",   "#E65100");
+        Button deleteButton = actionBtn("🗑️  Supprimer",  "#C62828");
 
         editButton.setOnAction(e -> {
             Employee selected = tableView.getSelectionModel().getSelectedItem();
             if (selected == null) { showAlert("Veuillez sélectionner un employé à modifier."); return; }
-            gestionnaire_taches.Main.getMainLayout().setCenter(new gestionnaire_taches.view.forms.EmployeeFormView(selected).getView());
+            AppShell shell = gestionnaire_taches.Main.getAppShell();
+            if (shell != null) {
+                shell.navigateTo(new EmployeeFormView(selected).getView());
+            }
         });
 
         deleteButton.setOnAction(e -> {
@@ -60,40 +82,82 @@ public class EmployeeListView {
             }
         });
 
-        HBox buttonBox = new HBox(10, addButton, editButton, deleteButton);
-        buttonBox.setPadding(new Insets(10, 0, 0, 0));
+        HBox actionBar = new HBox(10, editButton, deleteButton);
+        actionBar.setAlignment(Pos.CENTER_LEFT);
 
-        container.getChildren().addAll(titleLabel, tableView, buttonBox);
+        container.getChildren().addAll(header, tableView, actionBar);
         return container;
     }
 
     private TableView<Employee> createEmployeeTable() {
         TableColumn<Employee, Integer> idCol = new TableColumn<>("ID");
-        idCol.setCellValueFactory(data -> javafx.beans.binding.Bindings.createObjectBinding(() -> data.getValue().getId()));
+        idCol.setCellValueFactory(data ->
+            javafx.beans.binding.Bindings.createObjectBinding(() -> data.getValue().getId()));
+        idCol.setPrefWidth(50);
 
         TableColumn<Employee, String> nameCol = new TableColumn<>("Nom");
-        nameCol.setCellValueFactory(data -> javafx.beans.binding.Bindings.createStringBinding(() -> data.getValue().getNom()));
-        nameCol.setPrefWidth(160);
+        nameCol.setCellValueFactory(data ->
+            javafx.beans.binding.Bindings.createStringBinding(() -> data.getValue().getNom()));
+        nameCol.setPrefWidth(180);
 
         TableColumn<Employee, String> emailCol = new TableColumn<>("Email");
-        emailCol.setCellValueFactory(data -> javafx.beans.binding.Bindings.createStringBinding(() -> data.getValue().getEmail()));
-        emailCol.setPrefWidth(200);
+        emailCol.setCellValueFactory(data ->
+            javafx.beans.binding.Bindings.createStringBinding(() -> data.getValue().getEmail()));
+        emailCol.setPrefWidth(220);
 
         TableColumn<Employee, String> posteCol = new TableColumn<>("Poste");
-        posteCol.setCellValueFactory(data -> javafx.beans.binding.Bindings.createStringBinding(() -> data.getValue().getPoste()));
-        posteCol.setPrefWidth(150);
+        posteCol.setCellValueFactory(data ->
+            javafx.beans.binding.Bindings.createStringBinding(() -> data.getValue().getPoste()));
+        posteCol.setPrefWidth(160);
 
-        TableColumn<Employee, Integer> serviceIdCol = new TableColumn<>("ID Service");
-        serviceIdCol.setCellValueFactory(data -> javafx.beans.binding.Bindings.createObjectBinding(() -> data.getValue().getServiceId()));
+        TableColumn<Employee, Integer> serviceIdCol = new TableColumn<>("Service");
+        serviceIdCol.setCellValueFactory(data ->
+            javafx.beans.binding.Bindings.createObjectBinding(() -> data.getValue().getServiceId()));
+        serviceIdCol.setPrefWidth(80);
 
         TableColumn<Employee, Boolean> activeCol = new TableColumn<>("Actif");
-        activeCol.setCellValueFactory(data -> javafx.beans.binding.Bindings.createBooleanBinding(() -> data.getValue().isActif()));
+        activeCol.setCellValueFactory(data ->
+            new javafx.beans.property.SimpleBooleanProperty(data.getValue().isActif()));
+        activeCol.setPrefWidth(70);
+
+        // Cellule colorée pour le statut actif
+        activeCol.setCellFactory(col -> new TableCell<>() {
+            @Override
+            protected void updateItem(Boolean item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) { setText(null); setStyle(""); return; }
+                setText(item ? "✔" : "✘");
+                setStyle(item
+                    ? "-fx-text-fill: #2E7D32; -fx-font-weight: bold; -fx-alignment: center;"
+                    : "-fx-text-fill: #C62828; -fx-font-weight: bold; -fx-alignment: center;");
+            }
+        });
 
         TableView<Employee> tableView = new TableView<>();
         tableView.getColumns().addAll(idCol, nameCol, emailCol, posteCol, serviceIdCol, activeCol);
         tableView.setItems(employees);
-        tableView.setPrefHeight(450);
+        tableView.setPrefHeight(460);
+        tableView.setStyle(
+            "-fx-background-color: " + COLOR_WHITE + ";" +
+            "-fx-background-radius: 8;" +
+            "-fx-border-color: " + COLOR_BORDER + ";" +
+            "-fx-border-radius: 8;"
+        );
+        tableView.setPlaceholder(new Label("Aucun employé trouvé."));
         return tableView;
+    }
+
+    private Button actionBtn(String text, String color) {
+        Button btn = new Button(text);
+        btn.setStyle(
+            "-fx-background-color: " + color + ";" +
+            "-fx-text-fill: white;" +
+            "-fx-font-size: 13px;" +
+            "-fx-padding: 9 18 9 18;" +
+            "-fx-background-radius: 6;" +
+            "-fx-cursor: hand;"
+        );
+        return btn;
     }
 
     private void showAlert(String message) {

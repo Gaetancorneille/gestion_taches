@@ -1,162 +1,196 @@
 package gestionnaire_taches.view;
 
+import gestionnaire_taches.dao.impl.TaskDAOImpl;
+import gestionnaire_taches.model.Task;
+import gestionnaire_taches.model.TaskStatus;
+import gestionnaire_taches.util.SessionManager;
+import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.scene.control.Label;
 import javafx.scene.layout.*;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
+
+/**
+ * Contenu du tableau de bord employé.
+ * Le layout (topbar, sidebar, footer) est géré par AppShell — cette classe
+ * ne produit que le contenu central.
+ */
 public class EmployeeDashboardView {
 
-    private String employeeName;
+    private static final String COLOR_BG     = "#F5F7FA";
+    private static final String COLOR_WHITE  = "#FFFFFF";
+    private static final String COLOR_TITLE  = "#1E2A3A";
+    private static final String COLOR_SUBTITLE = "#7F8C8D";
+    private static final String COLOR_CARD_1 = "#1565C0";
+    private static final String COLOR_CARD_2 = "#2E7D32";
+    private static final String COLOR_CARD_3 = "#C62828";
+
+    private final String employeeName;
 
     public EmployeeDashboardView(String employeeName) {
         this.employeeName = employeeName != null ? employeeName : "Employé";
     }
 
-    public BorderPane getView() {
-        BorderPane mainView = new BorderPane();
-        mainView.setStyle("-fx-background-color: #f0f0f0;");
+    /**
+     * Retourne le contenu à injecter dans AppShell via shell.navigateTo(...)
+     * (plus de BorderPane avec topbar/sidebar recréés)
+     */
+    public VBox getView() {
+        VBox content = new VBox(25);
+        content.setPadding(new Insets(30));
+        content.setStyle("-fx-background-color: " + COLOR_BG + ";");
 
-        // Créer la barre supérieure
-        HBox topBar = createTopBar();
-        mainView.setTop(topBar);
+        content.getChildren().addAll(
+            buildWelcomeCard(),
+            sectionLabel("Mes tâches"),
+            buildStatsRow(),
+            sectionLabel("Accès rapide"),
+            buildShortcuts()
+        );
 
-        // Créer le menu latéral
-        VBox sideMenu = createSideMenu();
-        mainView.setLeft(sideMenu);
-
-        // Créer la zone de contenu
-        VBox contentArea = createContentArea();
-        mainView.setCenter(contentArea);
-
-        return mainView;
+        return content;
     }
 
-    private HBox createTopBar() {
-        HBox topBar = new HBox();
-        topBar.setAlignment(Pos.CENTER_RIGHT);
-        topBar.setPadding(new Insets(15, 30, 15, 30));
-        topBar.setStyle("-fx-background-color: #2c3e50; -fx-spacing: 20;");
+    // ── Carte de bienvenue ────────────────────────────────────────────────────
 
-        // Titre de la page
-        Label pageTitle = new Label("Tableau de bord employé");
-        pageTitle.setStyle("-fx-text-fill: white; -fx-font-size: 18px;");
-        HBox.setHgrow(pageTitle, javafx.scene.layout.Priority.ALWAYS);
+    private VBox buildWelcomeCard() {
+        VBox card = new VBox(6);
+        card.setPadding(new Insets(22, 28, 22, 28));
+        card.setStyle(
+            "-fx-background-color: " + COLOR_WHITE + ";" +
+            "-fx-background-radius: 10;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.06), 8, 0, 0, 2);"
+        );
 
-        // Profil utilisateur
-        HBox profileBox = new HBox(15);
-        profileBox.setAlignment(Pos.CENTER_RIGHT);
+        String heure = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm"));
+        String date  = LocalDateTime.now().format(
+            DateTimeFormatter.ofPattern("EEEE dd MMMM yyyy", Locale.FRENCH));
 
-        Label userName = new Label(employeeName);
-        userName.setStyle("-fx-text-fill: white;");
+        Label welcome = new Label("Bonjour, " + employeeName + " 👋");
+        welcome.setFont(Font.font("Arial", FontWeight.BOLD, 22));
+        welcome.setStyle("-fx-text-fill: " + COLOR_TITLE + ";");
 
-        Button logoutBtn = new Button("Déconnexion");
-        logoutBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white;");
-        logoutBtn.setOnAction(e -> {
-            // Logout and return to login screen
-            gestionnaire_taches.Main.showLoginView();
-        });
+        Label dateLabel = new Label(capitalize(date) + "  –  " + heure);
+        dateLabel.setStyle("-fx-text-fill: " + COLOR_SUBTITLE + "; -fx-font-size: 13px;");
 
-        profileBox.getChildren().addAll(userName, logoutBtn);
+        Label intro = new Label("Voici un aperçu de vos tâches assignées.");
+        intro.setStyle("-fx-text-fill: #555; -fx-font-size: 13px;");
 
-        topBar.getChildren().addAll(pageTitle, profileBox);
-
-        return topBar;
+        card.getChildren().addAll(welcome, dateLabel, intro);
+        return card;
     }
 
-    private VBox createSideMenu() {
-        VBox sideMenu = new VBox(10);
-        sideMenu.setPadding(new Insets(30, 20, 30, 20));
-        sideMenu.setMinWidth(200);
-        sideMenu.setStyle("-fx-background-color: #34495e; -fx-border-color: #2c3e50;");
+    // ── Statistiques dynamiques ───────────────────────────────────────────────
 
-        // Logo
-        Label logo = new Label("📊 Mon Espace");
-        logo.setStyle("-fx-text-fill: white; -fx-font-size: 18px; -fx-alignment: center;");
-        logo.setPadding(new Insets(0, 0, 20, 0));
+    private HBox buildStatsRow() {
+        // Récupérer les tâches de l'employé connecté
+        int employeeId = -1;
+        try {
+            gestionnaire_taches.model.User u = SessionManager.getInstance().getCurrentUser();
+            if (u != null) employeeId = u.getId();
+        } catch (Exception ignored) {}
 
-        // Menu items
-        Button dashboardBtn = createMenuItem("🏠 Tableau de bord", true);
-        Button tasksBtn = createMenuItem("✅ Mes tâches", false);
-        Button profileBtn = createMenuItem("👤 Mon profil", false);
+        List<Task> allTasks = new TaskDAOImpl().findAll();
+        final int eid = employeeId;
+        List<Task> myTasks = eid > 0
+            ? allTasks.stream().filter(t -> t.getEmployeeId() == eid).collect(Collectors.toList())
+            : allTasks;
 
-        VBox menuBox = new VBox(5);
-        menuBox.getChildren().addAll(dashboardBtn, tasksBtn, profileBtn);
+        long total     = myTasks.size();
+        long terminées = myTasks.stream().filter(t -> t.getStatut() == TaskStatus.TERMINEE).count();
+        long enCours   = myTasks.stream().filter(t -> t.getStatut() == TaskStatus.EN_COURS).count();
+        long enRetard  = myTasks.stream()
+            .filter(t -> t.getDateLimite() != null
+                && t.getDateLimite().isBefore(java.time.LocalDate.now())
+                && t.getStatut() != TaskStatus.TERMINEE)
+            .count();
 
-        sideMenu.getChildren().addAll(logo, menuBox);
-
-        return sideMenu;
+        HBox row = new HBox(20);
+        row.setAlignment(Pos.CENTER_LEFT);
+        row.getChildren().addAll(
+            statCard("📋", "Assignées",   String.valueOf(total),     "tâches au total",     COLOR_CARD_1),
+            statCard("✅", "Terminées",   String.valueOf(terminées), "tâches complétées",   COLOR_CARD_2),
+            statCard("⏰", "En retard",   String.valueOf(enRetard),  "dépassement de délai",COLOR_CARD_3)
+        );
+        return row;
     }
 
-    private Button createMenuItem(String text, boolean active) {
-        Button btn = new Button(text);
-        btn.setMaxWidth(Double.MAX_VALUE);
-        btn.setAlignment(Pos.CENTER_LEFT);
-        btn.setPadding(new Insets(12, 15, 12, 15));
-        
-        if (active) {
-            btn.setStyle("-fx-background-color: #3498db; -fx-text-fill: white;");
-        } else {
-            btn.setStyle("-fx-background-color: transparent; -fx-text-fill: white;");
-        }
-        
-        btn.setOnMouseEntered(e -> {
-            if (!active) {
-                btn.setStyle("-fx-background-color: #3d566e; -fx-text-fill: white;");
+    private VBox statCard(String icon, String title, String value, String subtitle, String color) {
+        VBox card = new VBox(6);
+        card.setPrefWidth(200);
+        card.setPadding(new Insets(20, 22, 20, 22));
+        card.setStyle(
+            "-fx-background-color: " + color + ";" +
+            "-fx-background-radius: 10;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 8, 0, 0, 3);"
+        );
+
+        Label iconLabel = new Label(icon + "  " + title);
+        iconLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.85); -fx-font-size: 12px;");
+
+        Label valueLabel = new Label(value);
+        valueLabel.setFont(Font.font("Arial", FontWeight.BOLD, 32));
+        valueLabel.setStyle("-fx-text-fill: white;");
+
+        Label subtitleLabel = new Label(subtitle);
+        subtitleLabel.setStyle("-fx-text-fill: rgba(255,255,255,0.7); -fx-font-size: 11px;");
+
+        card.getChildren().addAll(iconLabel, valueLabel, subtitleLabel);
+        return card;
+    }
+
+    // ── Raccourcis rapides ────────────────────────────────────────────────────
+
+    private HBox buildShortcuts() {
+        HBox shortcuts = new HBox(15);
+
+        javafx.scene.control.Button myTasksBtn = shortcutBtn("✅  Voir mes tâches", "#1565C0");
+        myTasksBtn.setOnAction(e -> {
+            AppShell shell = gestionnaire_taches.Main.getAppShell();
+            if (shell != null) {
+                List<Task> list = new TaskDAOImpl().findAll();
+                shell.navigateTo(new TaskListView(
+                    FXCollections.observableArrayList(list)).getView());
             }
         });
-        
-        btn.setOnMouseExited(e -> {
-            if (!active) {
-                btn.setStyle("-fx-background-color: transparent; -fx-text-fill: white;");
-            }
-        });
 
+        shortcuts.getChildren().add(myTasksBtn);
+        return shortcuts;
+    }
+
+    private javafx.scene.control.Button shortcutBtn(String text, String color) {
+        javafx.scene.control.Button btn = new javafx.scene.control.Button(text);
+        btn.setStyle(
+            "-fx-background-color: " + color + ";" +
+            "-fx-text-fill: white;" +
+            "-fx-font-size: 13px;" +
+            "-fx-padding: 12 22 12 22;" +
+            "-fx-background-radius: 8;" +
+            "-fx-cursor: hand;" +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.12), 6, 0, 0, 2);"
+        );
         return btn;
     }
 
-    private VBox createContentArea() {
-        VBox contentArea = new VBox(20);
-        contentArea.setPadding(new Insets(20));
-        contentArea.setStyle("-fx-background-color: #ecf0f1;");
+    // ── Utilitaires ───────────────────────────────────────────────────────────
 
-        // Section titre
-        Label sectionTitle = new Label("Mes tâches");
-        sectionTitle.setFont(Font.font("Arial", FontWeight.BOLD, 20));
-
-        // Statistiques personnelles
-        HBox statsCards = new HBox(20);
-        statsCards.setAlignment(Pos.CENTER);
-
-        statsCards.getChildren().addAll(
-            createStatCard("📋 Tâches assignées", "3", "Tâches en cours", "#3498db"),
-            createStatCard("✅ Tâches complétées", "1", "Tâches terminées", "#2ecc71"),
-            createStatCard("⏰ En retard", "0", "Tâches en souffrance", "#e74c3c")
-        );
-
-        contentArea.getChildren().addAll(sectionTitle, statsCards);
-
-        return contentArea;
+    private Label sectionLabel(String text) {
+        Label lbl = new Label(text);
+        lbl.setFont(Font.font("Arial", FontWeight.BOLD, 15));
+        lbl.setStyle("-fx-text-fill: " + COLOR_TITLE + ";");
+        return lbl;
     }
 
-    private VBox createStatCard(String title, String value, String subtitle, String color) {
-        VBox card = new VBox(5);
-        card.setStyle("-fx-background-color: " + color + "; -fx-background-radius: 10; -fx-padding: 20; -fx-spacing: 10;");
-        card.setPrefWidth(200);
-
-        Label titleLabel = new Label(title);
-        titleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 16px;");
-
-        Label valueLabel = new Label(value);
-        valueLabel.setStyle("-fx-text-fill: white; -fx-font-size: 32px; -fx-font-weight: bold;");
-
-        Label subtitleLabel = new Label(subtitle);
-        subtitleLabel.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
-
-        card.getChildren().addAll(titleLabel, valueLabel, subtitleLabel);
-
-        return card;
+    private String capitalize(String s) {
+        if (s == null || s.isEmpty()) return s;
+        return s.substring(0, 1).toUpperCase() + s.substring(1);
     }
 }

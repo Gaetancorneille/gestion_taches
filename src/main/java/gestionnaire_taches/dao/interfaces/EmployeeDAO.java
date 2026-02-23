@@ -1,6 +1,7 @@
 package gestionnaire_taches.dao.interfaces;
 
 import gestionnaire_taches.model.Employee;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -60,4 +61,11 @@ public interface EmployeeDAO extends GenericDAO<Employee, Integer> {
      * @return Liste des employés du service
      */
     List<Employee> findByServiceName(String serviceName);
+
+    /**
+     * Récupère tous les employés
+     * @return Liste des employés
+     */
+    @Override
+    public List<Employee> findAll();
 }

@@ -17,7 +17,7 @@ public class EmployeeDAOImpl implements EmployeeDAO {
     
     @Override
     public Employee save(Employee employee) {
-        String sql = "INSERT INTO Employee (nom, email, password, service_id, poste, dateEmbauche, dateCreation, actif) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Employee (nom, email, password, service_id, poste, dateEmbauche, actif) VALUES (?, ?, ?, ?, ?, ?, ?)";
         
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -30,8 +30,7 @@ public class EmployeeDAOImpl implements EmployeeDAO {
             stmt.setInt(4, employee.getServiceId());
             stmt.setString(5, employee.getPoste());
             stmt.setDate(6, employee.getDateEmbauche() != null ? Date.valueOf(employee.getDateEmbauche()) : null);
-            stmt.setTimestamp(7, Timestamp.valueOf(employee.getDateCreation()));
-            stmt.setBoolean(8, employee.isActif());
+            stmt.setBoolean(7, employee.isActif());
             
             int affectedRows = stmt.executeUpdate();
             if (affectedRows == 0) {
@@ -120,20 +119,27 @@ public class EmployeeDAOImpl implements EmployeeDAO {
     public List<Employee> findAll() {
         String sql = "SELECT * FROM Employee ORDER BY nom";
         List<Employee> employees = new ArrayList<>();
-        
-        try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
-            
-            while (rs.next()) {
-                employees.add(mapResultSetToEmployee(rs));
+
+        try (Connection conn = DatabaseConnection.getConnection()) {
+            if (conn == null) return employees;
+
+            try (PreparedStatement stmt = conn.prepareStatement(sql);
+                 ResultSet rs = stmt.executeQuery()) {
+
+                while (rs.next()) {
+                    try {
+                        employees.add(mapResultSetToEmployee(rs));
+                    } catch (Exception ex) {
+                        System.err.println("Erreur mappage employé id=" + rs.getInt("id") + " : " + ex.getMessage());
+                    }
+                }
             }
-            
+
         } catch (SQLException e) {
             System.err.println("Erreur lors de la récupération des employés : " + e.getMessage());
             e.printStackTrace();
         }
-        
+
         return employees;
     }
     
@@ -213,7 +219,7 @@ public class EmployeeDAOImpl implements EmployeeDAO {
     
     @Override
     public List<Employee> getEmployeesByService(Integer serviceId) {
-        return new ArrayList<>();
+        return findByServiceId(serviceId);
     }
     
     @Override
@@ -316,13 +322,27 @@ public class EmployeeDAOImpl implements EmployeeDAO {
      */
     private Employee mapResultSetToEmployee(ResultSet rs) throws SQLException {
         Employee employee = new Employee();
+
         employee.setId(rs.getInt("id"));
         employee.setNom(rs.getString("nom"));
         employee.setEmail(rs.getString("email"));
         employee.setPassword(rs.getString("password"));
         employee.setServiceId(rs.getInt("service_id"));
-        employee.setDateCreation(rs.getTimestamp("dateCreation").toLocalDateTime());
-        employee.setActif(rs.getBoolean("actif"));
+
+        try { employee.setPoste(rs.getString("poste")); }
+        catch (Exception e) { /* colonne absente */ }
+
+        try {
+            Date dateEmbauche = rs.getDate("dateEmbauche");
+            if (dateEmbauche != null) employee.setDateEmbauche(dateEmbauche.toLocalDate());
+        } catch (Exception e) { /* colonne absente */ }
+
+        // dateCreation absente de la table Employee en base — on initialise à maintenant par défaut
+        // (déjà fait dans le constructeur User())
+
+        try { employee.setActif(rs.getBoolean("actif")); }
+        catch (Exception e) { /* colonne absente */ }
+
         return employee;
     }
 }

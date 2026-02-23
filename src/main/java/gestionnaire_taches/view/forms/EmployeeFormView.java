@@ -1,5 +1,6 @@
 package gestionnaire_taches.view.forms;
 
+import gestionnaire_taches.view.AppShell;
 import gestionnaire_taches.view.EmployeeListView;
 import gestionnaire_taches.dao.impl.EmployeeDAOImpl;
 import gestionnaire_taches.dao.impl.ServiceDAOImpl;
@@ -140,14 +141,18 @@ public class EmployeeFormView {
             }
 
             List<Employee> list = dao.findAll();
-            gestionnaire_taches.Main.getMainLayout().setCenter(
-                new gestionnaire_taches.view.EmployeeListView(FXCollections.observableArrayList(list)).getView());
+            AppShell shell = gestionnaire_taches.Main.getAppShell();
+            if (shell != null) {
+                shell.navigateTo(new EmployeeListView(FXCollections.observableArrayList(list)).getView());
+            }
         });
 
         cancelButton.setOnAction(e -> {
             List<Employee> list = new EmployeeDAOImpl().findAll();
-            gestionnaire_taches.Main.getMainLayout().setCenter(
-                new gestionnaire_taches.view.EmployeeListView(FXCollections.observableArrayList(list)).getView());
+            AppShell shell = gestionnaire_taches.Main.getAppShell();
+            if (shell != null) {
+                shell.navigateTo(new EmployeeListView(FXCollections.observableArrayList(list)).getView());
+            }
         });
 
         resetButton.setOnAction(e -> {
